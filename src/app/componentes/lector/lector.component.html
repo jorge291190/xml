@@ -1,0 +1,95 @@
+<mat-toolbar>Lector XML</mat-toolbar>
+  <div style="margin: 10px;"><mat-grid-list cols="4" rowHeight="110px">
+    <mat-grid-tile
+    
+        class="shadow-lg p-3 mb-5 rounded"
+        *ngFor="let tile of tiles"
+        [colspan]="tile.cols"
+        [rowspan]="tile.rows"
+        [style.background]="tile.color">
+
+      <div *ngIf="tile.text === 'Three'" style="width: 100%;">
+        <div style="display:block;  position: absolute; top: 1px; width:100%;">
+          <mat-toolbar  >Selecciona Tus Archivos</mat-toolbar>
+        </div>
+        <div style="width: 95%;">
+        <mat-file-upload
+              [selectButtonText]="'Selecciona Tu(s) Archivos XML'"
+              [labelText] ="''"
+             
+              [uploadButtonText]="'Cargar'"
+              [allowMultipleFiles]="true"
+              [showUploadButton]="true"
+              [acceptedTypes]="'.xml'"
+              (uploadClicked)="onUploadClicked(selected)"
+              (selectedFilesChanged)="onSelectedFilesChanged($event)"
+              style="display: block; margin: auto;"
+              *ngIf="selected !== Null"
+              >
+              
+        </mat-file-upload>
+      </div>
+      </div>
+      <div *ngIf="tile.text === 'Two'" 
+        style="display:block; margin:auto; width: 95%; position: absolute; top: 10px;">
+        <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">uuid</th>
+            <th scope="col">RFC Emisor</th>
+            <th scope="col">Nombre Emisor</th>
+            <th scope="col">RFC Receptor</th>
+            <th scope="col">Nombre Receptor</th>
+            <th scope="col">Total</th>
+            <th scope="col">Tipo Comprobante</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of archivos">
+            <td >{{item.id}}</td>
+            <td >{{item.emisorrfc}}</td>
+            <td >{{item.emisornombre}}</td>
+            <td >{{item.receptorrfc}}</td>
+            <td >{{item.receptornombre}}</td>
+            <td >{{item.tot}}</td>
+            <td >{{item.tipc}}</td>
+            <td >{{item.Status}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="tile.text === 'One'"  style="width: 100%;">
+      <div style="display:block; margin:auto; position: absolute; top: 1px; width: 100%;">
+            <mat-toolbar  >Tipo de Carga</mat-toolbar>
+      </div>
+     <div style="width: 95%; display: block; margin: auto; align-items: center;">
+      <mat-form-field>
+        <mat-label>Selecciona Una Opcion</mat-label>
+        <mat-select [(value)]="selected" >
+          <mat-option>None</mat-option>
+          <mat-option value="Emitidos">Emitidos</mat-option>
+          <mat-option value="Recibidos">Recibidos</mat-option>
+          <mat-option value="Cancelados">Cancelados</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    </div>
+
+    <div *ngIf="tile.text === 'Four'"  style="width: 100%;">
+      <div style="display:block; margin:auto; position: absolute; top: 1px; width: 100%;">
+        <mat-toolbar  >Resultados</mat-toolbar>
+      </div>
+       <div style="display:block; margin:auto; width: 95%;"> 
+      <p class="badge badge-danger" style="font-size: 1em; display:block; margin:auto; width: 95%;">XML PENDIENTES POR SUBIR: {{ enProceso() }}</p>
+      <hr>
+      <p class="badge badge-success" style="font-size: 1em; display:block; margin:auto; width: 95%;">XML PROCESADOS: {{ Procesados() }}</p>
+      <hr>
+      <p class="badge badge-primary" style="font-size: 1em; display:block; margin:auto; width: 95%;">XML SUBIDOS: {{ Subidos() }}</p>
+    </div>
+    </div>
+    </mat-grid-tile>
+  </mat-grid-list>
+
+</div>
