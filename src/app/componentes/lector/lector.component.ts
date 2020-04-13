@@ -2,7 +2,6 @@ import { Component, OnInit, Attribute, ViewChild } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';  
 import { NgxXml2jsonService } from 'ngx-xml2json';
 import Swal from 'sweetalert2';
-import { log } from 'util';
 
 @Component({
   selector: 'app-lector',
@@ -58,19 +57,25 @@ export class LectorComponent implements OnInit {
         reader.readAsText(file);
         reader.onload =  () => {
         contador++;
-    const xmldata = reader.result.toString();
-    
-    
-    const parser = new DOMParser();
-    const subString = xmldata.replace(this.redos,"");
+        //trata los archivos como string
+        const xmldata = reader.result.toString();
+        //convierte el string en un DOM
+        const parser = new DOMParser();
+        const subString = xmldata.replace(this.redos,"");
 
-    
-    const xml = parser.parseFromString(subString, 'text/xml');
+          //xml convertido a cadena de texto
+         const xml = parser.parseFromString(subString, 'text/xml');
 
-   
+          
+    //xml->json
     const obj:any = this.ngxXml2jsonService.xmlToJson(xml);
+
+    console.log(obj);
+    
+    //CONSTANTES DE REEMPLAZO DESDE AQUI INICIAS TODO LO QUE VAYAS A REEMPLAZAR 
     const te = /tfd:TimbreFiscalDigital/gi;
     const dat = /@ATTRIBUTES/gi;
+
 
     let parsedata = JSON.stringify(obj).toLocaleLowerCase().replace(dat,'data');
            parsedata = parsedata.replace(te,"identificador").trim();
@@ -99,7 +104,7 @@ export class LectorComponent implements OnInit {
     
   
   }
-
+  //NO TOQUES NADA DEL OBJETO QUE YA ESTE AQUI, SI PUEDES AGREGAR NUEVAS CARACTERISTICAS
   pushFacturas(obj: any){
     let uuid =                obj.comprobante.complemento.identificador.data.uuid;
     let rfcpac =              obj.comprobante.complemento.identificador.data.rfcprovcertif;
@@ -140,10 +145,10 @@ export class LectorComponent implements OnInit {
       Status:'En Proceso',
 };
 
-console.log(JSON.stringify(temp));
+
 this.archivos.push(temp);
   }
-
+//NO TOQUES NADA DEL OBJETO QUE YA ESTE AQUI, SI PUEDES AGREGAR NUEVAS CARACTERISTICAS
   pushNoOBjeto(obj: any){
     let uuid =                obj.comprobante.complemento.identificador.data.uuid;
     let rfcpac =              obj.comprobante.complemento.identificador.data.rfcprovcertif;
@@ -184,11 +189,10 @@ this.archivos.push(temp);
       Status:'En Proceso',
 };
 
-console.log(JSON.stringify(temp));
 this.archivos.push(temp);
   }
 
-
+//NO TOQUES NADA DEL OBJETO QUE YA ESTE AQUI, SI PUEDES AGREGAR NUEVAS CARACTERISTICAS
   pushComplemento(obj: any){
     let uuid =                obj.comprobante.complemento.identificador.data.uuid;
     let rfcpac =              obj.comprobante.complemento.identificador.data.rfcprovcertif;
@@ -230,7 +234,7 @@ this.archivos.push(temp);
 
 };
 
-console.log(temp);
+
 this.archivos.push(temp);
 
 
@@ -251,7 +255,7 @@ this.archivos.push(temp);
   }
 
   async onUploadClicked(event){
-  //  console.log(this.archivos);
+  
       let contador = 0;
       Swal.fire({
         icon: 'success',
@@ -263,22 +267,36 @@ this.archivos.push(temp);
         contador++;
         if(elemento.Status  === 'En Proceso'){
               setTimeout(()  => {
-            
+               //PARA QUE FUNCIONE CON VARIOS USUARIOS HAY QUE AGREGAR LAS NUEVAS VARIABLES DE BASES DE DATOS
+              
               const body = JSON.stringify(elemento);
               const bd =                "bmt942pr6";
               const bdcanceldos =       "bnsrxgwgb";
               const bdemitidos =        'bnrqc65vf';
-        /*orden folio-Fecha-
-                metodoPago-nombre receptor-
-                rfc receptor-emisornombre-
-                emisorrfc-iva-
-                ieps-uuid-
-                pac-subtotal-
+        /*orden del archivo pph
+        
+                folio-
+                Fecha-
+                metodoPago-
+                nombre receptor-
+                rfc receptor-
+                emisornombre-
+                emisorrfc-
+                iva-
+                ieps-
+                uuid-
+                pac-
+                subtotal-
                 tipo comprobante
+
         */
+              //AQUI VAN LOS CAMPOS EN DONDE CAEN EN QUICKBASE
               const fields =            "11-16-19-20-21-12-14-6-13-15-133-7-83";
               const fieldscancelados =  "11-16-19-20-21-12-14-6-13-15-95-7-80";
               const fieldsemitidos  =   "11-16-19-20-21-12-14-6-13-15-228-7-101";
+
+
+           
               if(event === 'Recibidos'){
               this._http.post(`https://tciconsultoria.com/cargaxmlv4.php?bd=${bd}&fields=${fields}`,body, {responseType:'text'} )
               .subscribe ( res => { 
@@ -288,7 +306,7 @@ this.archivos.push(temp);
                 }    
               });
               } //fin del if de Recibidos
-              if(event === 'Emitidos '){
+              if(event === 'Emitidos'){
                 this._http.post(`https://tciconsultoria.com/cargaxmlv4.php?bd=${bdemitidos}&fields=${fieldsemitidos}`,body, {responseType:'text'} )
                 .subscribe ( res => { 
                   const parse: any = JSON.parse(res);
