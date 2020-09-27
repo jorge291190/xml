@@ -2,6 +2,7 @@ import { Component, OnInit, Attribute, ViewChild } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';  
 import { NgxXml2jsonService } from 'ngx-xml2json';
 import Swal from 'sweetalert2';
+import { isArray } from 'util';
 
 @Component({
   selector: 'app-lector',
@@ -70,15 +71,19 @@ export class LectorComponent implements OnInit {
     //xml->json
     const obj:any = this.ngxXml2jsonService.xmlToJson(xml);
 
-    console.log(obj);
+   // console.log(obj);
     
     //CONSTANTES DE REEMPLAZO DESDE AQUI INICIAS TODO LO QUE VAYAS A REEMPLAZAR 
     const te = /tfd:TimbreFiscalDigital/gi;
     const dat = /@ATTRIBUTES/gi;
+    const pagos = /pago10:Pago/gi;
+    const ppago =/pago10:doctorelacionado/gi;
 
 
     let parsedata = JSON.stringify(obj).toLocaleLowerCase().replace(dat,'data');
            parsedata = parsedata.replace(te,"identificador").trim();
+           parsedata = parsedata.replace(pagos,"pagos").trim();
+           parsedata = parsedata.replace(ppago,"repago").trim();
            const result: any = JSON.parse(parsedata);
       try {
        
@@ -106,6 +111,7 @@ export class LectorComponent implements OnInit {
   }
   //NO TOQUES NADA DEL OBJETO QUE YA ESTE AQUI, SI PUEDES AGREGAR NUEVAS CARACTERISTICAS
   pushFacturas(obj: any){
+    
     let uuid =                obj.comprobante.complemento.identificador.data.uuid;
     let rfcpac =              obj.comprobante.complemento.identificador.data.rfcprovcertif;
     let rfcemisor =           obj.comprobante.emisor.data.rfc;
@@ -115,6 +121,7 @@ export class LectorComponent implements OnInit {
     let serie =               obj.comprobante.data.serie;
     let folio =               obj.comprobante.data.folio;
     let fecha =               obj.comprobante.data.fecha;
+    let descuento =           obj.comprobante.data.descuento;
     let condicionespago =     obj.comprobante.data.condicionesdepago;
     let subtotal =            obj.comprobante.data.subtotal;
     let moneda =              obj.comprobante.data.moneda;
@@ -123,6 +130,7 @@ export class LectorComponent implements OnInit {
     let metodopago =          obj.comprobante.data.metodopago;
     let lugar =               obj.comprobante.data.lugarexpedicion;
     let impuestos =           obj.comprobante.impuestos.traslados;
+    let formapago =           obj.comprobante.data.formapago;
 
     let temp : any ={
       id: uuid,
@@ -133,6 +141,7 @@ export class LectorComponent implements OnInit {
       receptornombre: nombrereceptor,
       ser: serie,
       fol: folio,
+      desc: descuento,
       date: fecha,
       conpago: condicionespago,
       subtot: subtotal,
@@ -142,6 +151,7 @@ export class LectorComponent implements OnInit {
       metpago: metodopago,
       lug: lugar,
       impu: impuestos,
+      forma: formapago,
       Status:'En Proceso',
 };
 
@@ -159,6 +169,7 @@ this.archivos.push(temp);
     let serie =               obj.comprobante.data.serie;
     let folio =               obj.comprobante.data.folio;
     let fecha =               obj.comprobante.data.fecha;
+    let descuento =           obj.comprobante.data.descuento;
     let condicionespago =     obj.comprobante.data.condicionesdepago;
     let subtotal =            obj.comprobante.data.subtotal;
     let moneda =              obj.comprobante.data.moneda;
@@ -166,6 +177,7 @@ this.archivos.push(temp);
     let tipocomprobante =     obj.comprobante.data.tipodecomprobante;
     let metodopago =          obj.comprobante.data.metodopago;
     let lugar =               obj.comprobante.data.lugarexpedicion;
+    let formapago =           obj.comprobante.data.formapago;
    // let impuestos =           obj.comprobante.impuestos.traslados;
 
     let temp : any ={
@@ -178,6 +190,7 @@ this.archivos.push(temp);
       ser: serie,
       fol: folio,
       date: fecha,
+      desc: descuento,
       conpago: condicionespago,
       subtot: subtotal,
       mon: moneda,
@@ -186,6 +199,7 @@ this.archivos.push(temp);
       metpago: metodopago,
       lug: lugar,
       impu: [],
+      forma: formapago,
       Status:'En Proceso',
 };
 
@@ -211,6 +225,8 @@ this.archivos.push(temp);
     let metodopago =          '';
     let lugar =               obj.comprobante.data.lugarexpedicion;
     let impuestos =           '';
+    let formapago =           '';
+    let ppagos  =   this.sumaPagos(obj.comprobante.complemento);
 
     let temp : any ={
       id: uuid,
@@ -230,6 +246,8 @@ this.archivos.push(temp);
       metpago: metodopago,
       lug: lugar,
       impu: impuestos,
+      imppagado: ppagos,
+      forma: formapago,
       Status:'En Proceso',
 
 };
@@ -274,7 +292,6 @@ this.archivos.push(temp);
               const bdcanceldos =       "bnsrxgwgb";
               const bdemitidos =        'bnrqc65vf';
         /*orden del archivo pph
-        
                 folio-
                 Fecha-
                 metodoPago-
@@ -288,20 +305,20 @@ this.archivos.push(temp);
                 pac-
                 subtotal-
                 tipo comprobante
-
         */
               //AQUI VAN LOS CAMPOS EN DONDE CAEN EN QUICKBASE
-              const fields =            "11-16-19-20-21-12-14-6-13-15-133-7-83";
-              const fieldscancelados =  "11-16-19-20-21-12-14-6-13-15-95-7-80";
-              const fieldsemitidos  =   "11-16-19-20-21-12-14-6-13-15-228-7-101";
-
+              const fields =            "11-16-19-20-21-12-14-6-13-15-133-7-83-69-134-136";
+              const fieldscancelados =  "11-16-19-20-21-12-14-6-13-15-95-7-80-69-96-97";
+              const fieldsemitidos  =   "11-16-19-20-21-12-14-6-13-15-228-7-101-69-231-232";
 
            
               if(event === 'Recibidos'){
               this._http.post(`https://tciconsultoria.com/cargaxmlv4.php?bd=${bd}&fields=${fields}`,body, {responseType:'text'} )
               .subscribe ( res => { 
                 const parse: any = JSON.parse(res);
+                console.log(res);
                 if(parse.errtext) {
+                  
                     this.archivos.find(ele => ele.id === elemento.id).Status = parse.errtext;          
                 }    
               });
@@ -309,6 +326,7 @@ this.archivos.push(temp);
               if(event === 'Emitidos'){
                 this._http.post(`https://tciconsultoria.com/cargaxmlv4.php?bd=${bdemitidos}&fields=${fieldsemitidos}`,body, {responseType:'text'} )
                 .subscribe ( res => { 
+                  console.log(res);
                   const parse: any = JSON.parse(res);
                   if(parse.errtext) {
                       this.archivos.find(ele => ele.id === elemento.id).Status = parse.errtext;          
@@ -319,6 +337,8 @@ this.archivos.push(temp);
               this._http.post(`https://tciconsultoria.com/cargaxmlv4.php?bd=${bdcanceldos}&fields=${fieldscancelados}`,body, {responseType:'text'} )
               .subscribe(res =>{ 
                 const parse: any = JSON.parse(res);
+                console.log(res);
+                
                 if(parse.errtext) {
                   this.archivos.find(ele => ele.id === elemento.id).Status = parse.errtext;          
               }  
@@ -333,4 +353,28 @@ this.archivos.push(temp);
   }
 
 
+
+  sumaPagos(obj:any): number{
+      if(!isArray(obj.pagoss.pagos)){
+
+        return Number(obj.pagoss.pagos.repago.data.imppagado);
+      }
+    else{
+      let suma = 0;
+    obj.pagoss.pagos.forEach(element => {
+      if(element.repago){
+
+        
+        suma += Number(element.repago.data.imppagado);
+      }
+    });
+    return suma;
+      
+    }
+    
+    
+
+
+  }
+  
 }
